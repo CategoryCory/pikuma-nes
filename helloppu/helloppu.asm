@@ -19,8 +19,15 @@ Main:
     stx PPU_ADDR            ; Set hi-byte of PPU_ADDR to $3F
     ldx #$00
     stx PPU_ADDR            ; Set lo-byte of PPU_ADDR to $00
-    lda #$2A
-    sta PPU_DATA            ; Send $2A (lime-green color code) to PPU_DATA
+
+    ldy #0
+LoopPalette:
+    lda PaletteData,y       ; Lookup byte in ROM
+    sta PPU_DATA            ; Set value to send to PPU_DATA
+    iny                     ; Y++
+    cpy #32                 ; Check if Y equals 32
+    bne LoopPalette         ; If not, keep looking
+
     lda #%00011110
     sta PPU_MASK            ; Set PPU_MASK bits to show background and sprites
 
@@ -38,6 +45,10 @@ NMI:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 IRQ:
     rti                     ; Return from interrupt
+
+PaletteData:
+.byte $0F,$2A,$0C,$3A, $0F,$2A,$0C,$3A, $0F,$2A,$0C,$3A, $0F,$2A,$0C,$3A ; Background
+.byte $0F,$10,$00,$26, $0F,$10,$00,$26, $0F,$10,$00,$26, $0F,$10,$00,$26 ; Sprites
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Vectors with the addresses of the handlers that we always add at $FFFA
